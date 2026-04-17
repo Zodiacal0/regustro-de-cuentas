@@ -1,0 +1,20 @@
+{
+  "name": "registro-contable-api",
+  "version": "1.0.0",
+  "description": "API for Registro Contable on Vercel",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "nodemon api/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongodb": "^7.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "private": true
+}
