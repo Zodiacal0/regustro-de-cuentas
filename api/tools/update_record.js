@@ -1,68 +1,136 @@
-require('dotenv').config();
-const { MongoClient, ObjectId } = require('mongodb');
+const { getDb } = require('../db');
+const { ObjectId } = require('mongodb');
+
+const ALLOWED_FIELDS = {
+    objetivo: ['nombre', 'monto_actual', 'monto_objetivo'],
+    cuenta:   ['nombre', 'tipo', 'saldo'],
+    tarjeta:  ['nombre', 'tipo', 'saldo', 'fecha_corte'],
+    entrada:  ['descripcion', 'monto', 'fecha', 'categoria', 'cuenta_id', 'tarjeta_id'],
+    gasto:    ['descripcion', 'monto', 'fecha', 'categoria', 'metodo_pago', 'cuenta_id', 'tarjeta_id']
+};
+
+const COLLECTION_MAP = {
+    objetivo: 'objetivos',
+    cuenta:   'cuentas',
+    tarjeta:  'tarjetas',
+    entrada:  'entradas',
+    gasto:    'gastos'
+};
 
 // Motor Determinístico de Actualización (Layer 3)
 async function updateRecord(tipo_registro, id, payload) {
-  const uri = process.env.MONGO_URI;
-  if (!uri) {
-    return { success: false, message: "MONGO_URI no configurado", data: null };
-  }
+    if (!ObjectId.isValid(id)) {
+        return { success: false, message: "ID de registro inválido", data: null };
+    }
 
-  const client = new MongoClient(uri);
-
-  try {
-    await client.connect();
-    const db = client.db();
-
-    // Las colecciones B.L.A.S.T mapeadas
-    const validCollections = {
-        'objetivo': 'objetivos',
-        'cuenta': 'cuentas',
-        'tarjeta': 'tarjetas',
-        'entrada': 'entradas',
-        'gasto': 'gastos'
-    };
-
-    const collectionName = validCollections[tipo_registro];
+    const collectionName = COLLECTION_MAP[tipo_registro];
     if (!collectionName) {
-        throw new Error(`Tipo de registro desconocido o no soportado para actualizar: ${tipo_registro}`);
+        return { success: false, message: `Tipo de registro desconocido: ${tipo_registro}`, data: null };
     }
 
-    const collection = db.collection(collectionName);
-    
-    // Ejecuta el PUT/PATCH ignorando el _id en el payload (si existe)
-    if (payload._id) {
-        delete payload._id;
-    }
-
-    // Calcula de nuevo el porcentaje en caso de que sea un Objetivo
-    if (tipo_registro === 'objetivo' && payload.monto_actual !== undefined && payload.monto_objetivo !== undefined) {
-        payload.porcentaje_completado = Number(((Number(payload.monto_actual) / Number(payload.monto_objetivo)) * 100).toFixed(2));
-    }
-
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: payload }
+    // Filtrar solo los campos permitidos para este tipo
+    const allowed = ALLOWED_FIELDS[tipo_registro] || [];
+    const sanitizedPayload = Object.fromEntries(
+        Object.entries(payload).filter(([k]) => allowed.includes(k))
     );
 
-    if (result.matchedCount === 0) {
-        throw new Error("No se encontró el registro con el ID especificado.");
+    if (Object.keys(sanitizedPayload).length === 0) {
+        return { success: false, message: "No se enviaron campos válidos para actualizar", data: null };
     }
 
-    return {
-      success: true,
-      message: "Registro actualizado exitosamente",
-      data: { _id: id, ...payload }
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-      data: null
-    };
-  } finally {
-    await client.close();
-  }
+    try {
+        const db = await getDb();
+        const collection = db.collection(collectionName);
+
+        // Para objetivos: recalcular porcentaje siempre, incluso con update parcial
+        if (tipo_registro === 'objetivo') {
+            const existing = await collection.findOne({ _id: new ObjectId(id) });
+            if (!existing) {
+                return { success: false, message: "No se encontró el registro con el ID especificado.", data: null };
+            }
+            const newMontoActual = sanitizedPayload.monto_actual ?? existing.monto_actual;
+            const newMontoObjetivo = sanitizedPayload.monto_objetivo ?? existing.monto_objetivo;
+            if (newMontoObjetivo <= 0) {
+                return { success: false, message: "monto_objetivo debe ser mayor a 0", data: null };
+            }
+            sanitizedPayload.porcentaje_completado = Number(
+                ((newMontoActual / newMontoObjetivo) * 100).toFixed(2)
+            );
+        }
+
+        // Para entradas/gastos: sincronizar delta de saldo si cambió el monto
+        if ((tipo_registro === 'entrada' || tipo_registro === 'gasto') && sanitizedPayload.monto !== undefined) {
+            const existing = await collection.findOne({ _id: new ObjectId(id) });
+            if (existing && typeof existing.monto === 'number') {
+                const delta = sanitizedPayload.monto - existing.monto;
+                const isGasto = tipo_registro === 'gasto';
+
+                if (delta !== 0) {
+                    if (existing.tarjeta_id) {
+                        try {
+                            const tarjetaCollection = db.collection('tarjetas');
+                            const miTarjeta = await tarjetaCollection.findOne({ _id: new ObjectId(existing.tarjeta_id) });
+                            if (miTarjeta) {
+                                let nuevoSaldo = miTarjeta.saldo;
+                                // Crédito: deuda aumenta con gastos. Delta positivo en gasto = más deuda.
+                                if (miTarjeta.tipo === 'Crédito') {
+                                    nuevoSaldo = isGasto ? nuevoSaldo + delta : nuevoSaldo - delta;
+                                } else {
+                                    nuevoSaldo = isGasto ? nuevoSaldo - delta : nuevoSaldo + delta;
+                                }
+                                await tarjetaCollection.updateOne(
+                                    { _id: new ObjectId(existing.tarjeta_id) },
+                                    { $set: { saldo: nuevoSaldo } }
+                                );
+                            }
+                        } catch (syncErr) {
+                            console.error("Warning: Tarjeta delta sync failed:", syncErr.message);
+                        }
+                    }
+
+                    if (existing.cuenta_id) {
+                        try {
+                            const cuentaCollection = db.collection('cuentas');
+                            const miCuenta = await cuentaCollection.findOne({ _id: new ObjectId(existing.cuenta_id) });
+                            if (miCuenta) {
+                                const nuevoSaldo = isGasto
+                                    ? miCuenta.saldo - delta
+                                    : miCuenta.saldo + delta;
+                                await cuentaCollection.updateOne(
+                                    { _id: new ObjectId(existing.cuenta_id) },
+                                    { $set: { saldo: nuevoSaldo } }
+                                );
+                            }
+                        } catch (syncErr) {
+                            console.error("Warning: Cuenta delta sync failed:", syncErr.message);
+                        }
+                    }
+                }
+            }
+        }
+
+        const result = await collection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: sanitizedPayload }
+        );
+
+        if (result.matchedCount === 0) {
+            return { success: false, message: "No se encontró el registro con el ID especificado.", data: null };
+        }
+
+        return {
+            success: true,
+            message: "Registro actualizado exitosamente",
+            data: { _id: id, ...sanitizedPayload }
+        };
+
+    } catch (error) {
+        return {
+            success: false,
+            message: error.message,
+            data: null
+        };
+    }
 }
 
 module.exports = { updateRecord };
