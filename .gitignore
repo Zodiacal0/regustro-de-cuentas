@@ -1,6 +1,3 @@
-# Frontend (Excluded for split deployment)
-frontend/
-
 # Dependencies
 node_modules/
 .tmp/
