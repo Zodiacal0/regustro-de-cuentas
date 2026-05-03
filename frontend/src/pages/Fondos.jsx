@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, CreditCard, Landmark, Pencil, Trash2, Check, X } from 'lucide-react';
+import { CreditCard, Landmark, Trash2, X } from 'lucide-react';
 import AddCardModal from '../components/AddCardModal';
 import AddAccountModal from '../components/AddAccountModal';
 
@@ -48,7 +48,8 @@ function FondoCard({ item, tipo, currency, refreshData }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation();
     if (!window.confirm(`¿Eliminar "${item.nombre}"?`)) return;
     setDeleting(true);
     try {
@@ -65,11 +66,13 @@ function FondoCard({ item, tipo, currency, refreshData }) {
 
   return (
     <>
-      <div className={bgClass} style={{ opacity: deleting ? 0.4 : 1, marginBottom: 0 }}>
+      <div
+        className={bgClass}
+        style={{ opacity: deleting ? 0.4 : 1, marginBottom: 0, cursor: 'pointer' }}
+        onClick={() => setEditOpen(true)}
+        title="Clic para editar saldo"
+      >
         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
-          <button onClick={() => setEditOpen(true)} style={{ background: 'rgba(255,255,255,0.25)', border: 'none', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: 'white', display: 'flex' }} title="Editar saldo">
-            <Pencil size={14} />
-          </button>
           <button onClick={handleDelete} style={{ background: 'rgba(239,68,68,0.3)', border: 'none', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: 'white', display: 'flex' }} title="Eliminar">
             <Trash2 size={14} />
           </button>

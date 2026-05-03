@@ -5,9 +5,22 @@ import AddCardModal from '../components/AddCardModal';
 import AddTransactionModal from '../components/AddTransactionModal';
 import AddAccountModal from '../components/AddAccountModal';
 
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const PERIOD_LABELS = { week: 'Esta Semana', month: 'Este Mes', year: 'Este Año', all: 'Todo' };
 
-function filterByPeriod(transactions, period) {
+const formatMonthLabel = (ym) => {
+  const [y, m] = ym.split('-').map(Number);
+  return `${MONTHS_ES[m - 1]} ${y}`;
+};
+
+function filterByPeriod(transactions, period, customMonth) {
+  if (period === 'custom' && customMonth) {
+    const [y, m] = customMonth.split('-').map(Number);
+    return transactions.filter(tx => {
+      const d = new Date(tx.fecha);
+      return d.getFullYear() === y && (d.getMonth() + 1) === m;
+    });
+  }
   if (period === 'all') return transactions;
   const now = new Date();
   return transactions.filter(tx => {
@@ -27,6 +40,7 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
   const [timeFilter, setTimeFilter] = useState('Mensual');
   const [chartAnim, setChartAnim] = useState('');
   const [period, setPeriod] = useState('month');
+  const [customMonth, setCustomMonth] = useState('');
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
@@ -68,8 +82,20 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
     setTimeout(() => { setTimeFilter(filter); setChartAnim('widget-anim-enter'); }, 10);
   };
 
+  // Meses disponibles en las transacciones para el selector
+  const availableMonths = useMemo(() => {
+    const seen = new Set();
+    transactions.forEach(tx => {
+      const d = new Date(tx.fecha);
+      seen.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    });
+    return Array.from(seen).sort().reverse();
+  }, [transactions]);
+
+  const periodLabel = period === 'custom' && customMonth ? formatMonthLabel(customMonth) : (periodLabel || 'Período');
+
   // Transacciones filtradas por periodo seleccionado (KPIs + chart)
-  const periodTx = useMemo(() => filterByPeriod(transactions, period), [transactions, period]);
+  const periodTx = useMemo(() => filterByPeriod(transactions, period, customMonth), [transactions, period, customMonth]);
 
   const totalIngresos = useMemo(() => periodTx.filter(t => !t.isExpense).reduce((a, t) => a + t.monto, 0), [periodTx]);
   const totalGastos   = useMemo(() => periodTx.filter(t =>  t.isExpense).reduce((a, t) => a + t.monto, 0), [periodTx]);
@@ -119,11 +145,27 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
           <button
             key={key}
             className={`filter-btn ${period === key ? 'active' : ''}`}
-            onClick={() => setPeriod(key)}
+            onClick={() => { setPeriod(key); setCustomMonth(''); }}
           >
             {label}
           </button>
         ))}
+        <div style={{ width: '1px', height: '18px', background: 'var(--border)', margin: '0 2px' }} />
+        <select
+          value={customMonth}
+          onChange={e => {
+            const val = e.target.value;
+            setCustomMonth(val);
+            if (val) setPeriod('custom');
+          }}
+          className={`filter-btn ${period === 'custom' && customMonth ? 'active' : ''}`}
+          style={{ cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          <option value="">Mes específico...</option>
+          {availableMonths.map(m => (
+            <option key={m} value={m}>{formatMonthLabel(m)}</option>
+          ))}
+        </select>
       </div>
 
       {/* TOP KPI CARDS */}
@@ -131,17 +173,17 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
         <div className="card">
           <div className="kpi-title">Gastos <ArrowDownRight size={16} color="var(--danger)" /></div>
           <div className="kpi-value" style={{color: 'var(--text-main)'}}>{currency}{totalGastos.toFixed(2)}</div>
-          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{PERIOD_LABELS[period]}</div>
+          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{periodLabel}</div>
         </div>
         <div className="card">
           <div className="kpi-title">Ingresos <ArrowUpRight size={16} color="var(--success)" /></div>
           <div className="kpi-value" style={{color: 'var(--text-main)'}}>{currency}{totalIngresos.toFixed(2)}</div>
-          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{PERIOD_LABELS[period]}</div>
+          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{periodLabel}</div>
         </div>
         <div className="card">
           <div className="kpi-title">Balance Neto</div>
           <div className="kpi-value" style={{ color: balanceTotal >= 0 ? 'var(--success)' : 'var(--danger)' }}>{currency}{balanceTotal.toFixed(2)}</div>
-          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{PERIOD_LABELS[period]}</div>
+          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{periodLabel}</div>
         </div>
         <div className="card card-dark">
           <div className="kpi-title">
@@ -158,7 +200,7 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
           <div className="chart-header">
             <div>
               <h3 style={{fontSize: '18px', fontWeight: '600'}}>Análisis de Balance</h3>
-              <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Histórico · {PERIOD_LABELS[period]}</p>
+              <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Histórico · {periodLabel}</p>
             </div>
             <div className="chart-controls">
               <div className="chart-filters">
@@ -204,7 +246,7 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
           <div className="chart-header">
             <div>
               <h3 style={{fontSize: '18px', fontWeight: '600'}}>Composición</h3>
-              <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Gastos · {PERIOD_LABELS[period]}</p>
+              <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Gastos · {periodLabel}</p>
             </div>
           </div>
           <div style={{flex: 1, width: '100%', height: '100%', minHeight: '200px'}}>
