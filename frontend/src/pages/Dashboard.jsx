@@ -92,7 +92,7 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
     return Array.from(seen).sort().reverse();
   }, [transactions]);
 
-  const periodLabel = period === 'custom' && customMonth ? formatMonthLabel(customMonth) : (periodLabel || 'Período');
+  const periodLabel = period === 'custom' && customMonth ? formatMonthLabel(customMonth) : (PERIOD_LABELS[period] || 'Período');
 
   // Transacciones filtradas por periodo seleccionado (KPIs + chart)
   const periodTx = useMemo(() => filterByPeriod(transactions, period, customMonth), [transactions, period, customMonth]);
