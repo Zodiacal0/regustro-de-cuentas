@@ -6,7 +6,8 @@ const COLLECTION_MAP = {
     cuenta:   'cuentas',
     tarjeta:  'tarjetas',
     entrada:  'entradas',
-    gasto:    'gastos'
+    gasto:    'gastos',
+    deuda:    'deudas'
 };
 
 // Motor Determinístico de Eliminación (Layer 3)

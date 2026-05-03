@@ -61,6 +61,15 @@ async function insertRecord(tipo_registro, payload) {
                 throw new Error("Cuenta: nombre, tipo y saldo (número) son obligatorios");
             }
             collectionName = 'cuentas';
+        } else if (tipo_registro === 'deuda') {
+            if (!payload.nombre || typeof payload.monto_total !== 'number' || payload.monto_total <= 0) {
+                throw new Error("Deuda: nombre y monto_total (número > 0) son obligatorios");
+            }
+            if (typeof payload.monto_pagado !== 'number' || payload.monto_pagado < 0) {
+                throw new Error("Deuda: monto_pagado debe ser un número no negativo");
+            }
+            payload.porcentaje_pagado = Number(((payload.monto_pagado / payload.monto_total) * 100).toFixed(2));
+            collectionName = 'deudas';
         } else {
             throw new Error(`Tipo de registro desconocido: ${tipo_registro}`);
         }

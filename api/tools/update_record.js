@@ -6,7 +6,8 @@ const ALLOWED_FIELDS = {
     cuenta:   ['nombre', 'tipo', 'saldo'],
     tarjeta:  ['nombre', 'tipo', 'saldo', 'fecha_corte'],
     entrada:  ['descripcion', 'monto', 'fecha', 'categoria', 'cuenta_id', 'tarjeta_id'],
-    gasto:    ['descripcion', 'monto', 'fecha', 'categoria', 'metodo_pago', 'cuenta_id', 'tarjeta_id']
+    gasto:    ['descripcion', 'monto', 'fecha', 'categoria', 'metodo_pago', 'cuenta_id', 'tarjeta_id'],
+    deuda:    ['nombre', 'acreedor', 'monto_total', 'monto_pagado', 'notas', 'fecha_vencimiento']
 };
 
 const COLLECTION_MAP = {
@@ -14,7 +15,8 @@ const COLLECTION_MAP = {
     cuenta:   'cuentas',
     tarjeta:  'tarjetas',
     entrada:  'entradas',
-    gasto:    'gastos'
+    gasto:    'gastos',
+    deuda:    'deudas'
 };
 
 // Motor Determinístico de Actualización (Layer 3)
@@ -41,6 +43,22 @@ async function updateRecord(tipo_registro, id, payload) {
     try {
         const db = await getDb();
         const collection = db.collection(collectionName);
+
+        // Para deudas: recalcular porcentaje_pagado
+        if (tipo_registro === 'deuda') {
+            const existing = await collection.findOne({ _id: new ObjectId(id) });
+            if (!existing) {
+                return { success: false, message: "No se encontró el registro con el ID especificado.", data: null };
+            }
+            const newMontoPagado = sanitizedPayload.monto_pagado ?? existing.monto_pagado;
+            const newMontoTotal = sanitizedPayload.monto_total ?? existing.monto_total;
+            if (newMontoTotal <= 0) {
+                return { success: false, message: "monto_total debe ser mayor a 0", data: null };
+            }
+            sanitizedPayload.porcentaje_pagado = Number(
+                (Math.min(newMontoPagado / newMontoTotal, 1) * 100).toFixed(2)
+            );
+        }
 
         // Para objetivos: recalcular porcentaje siempre, incluso con update parcial
         if (tipo_registro === 'objetivo') {
