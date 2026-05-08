@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { CreditCard, Landmark, Trash2, X } from 'lucide-react';
+import { apiFetch } from '../utils/apiFetch';
 import AddCardModal from '../components/AddCardModal';
 import AddAccountModal from '../components/AddAccountModal';
 
@@ -11,9 +12,9 @@ function EditSaldoModal({ item, tipo, currency, onClose, refreshData }) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records/${tipo}/${item._id}`, {
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/${tipo}/${item._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        
         body: JSON.stringify({ saldo: Number(saldo) })
       });
       const data = await res.json();
@@ -53,7 +54,7 @@ function FondoCard({ item, tipo, currency, refreshData }) {
     if (!window.confirm(`¿Eliminar "${item.nombre}"?`)) return;
     setDeleting(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records/${tipo}/${item._id}`, { method: 'DELETE' });
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/${tipo}/${item._id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) refreshData();
       else alert('Error: ' + data.message);

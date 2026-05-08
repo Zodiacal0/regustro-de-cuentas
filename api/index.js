@@ -10,6 +10,8 @@ const { insertRecord } = require('./tools/insert_record');
 const { getAllRecords } = require('./tools/get_records');
 const { updateRecord } = require('./tools/update_record');
 const { deleteRecord } = require('./tools/delete_record');
+const authRoutes = require('./auth/auth_routes');
+const { validateJWT } = require('./auth/validate_jwt');
 
 const app = express();
 
@@ -21,8 +23,11 @@ app.get('/', (req, res) => {
     res.status(200).json({ success: true, message: 'B.L.A.S.T Engine IS ONLINE.' });
 });
 
+// Rutas públicas de autenticación
+app.use('/api/auth', authRoutes);
+
 // GET: Extraer todo el panorama contable
-app.get('/api/records', async (req, res) => {
+app.get('/api/records', validateJWT, async (req, res) => {
     try {
         const result = await getAllRecords();
         if (result.success) {
@@ -36,7 +41,7 @@ app.get('/api/records', async (req, res) => {
 });
 
 // POST: Crear un nuevo registro
-app.post('/api/records', async (req, res) => {
+app.post('/api/records', validateJWT, async (req, res) => {
     try {
         const { tipo_registro, payload } = req.body;
 
@@ -66,7 +71,7 @@ app.post('/api/records', async (req, res) => {
 });
 
 // PUT: Actualizar un documento existente por ID y Tipo
-app.put('/api/records/:tipo_registro/:id', async (req, res) => {
+app.put('/api/records/:tipo_registro/:id', validateJWT, async (req, res) => {
     try {
         const { tipo_registro, id } = req.params;
         const payload = req.body;
@@ -95,7 +100,7 @@ app.put('/api/records/:tipo_registro/:id', async (req, res) => {
 });
 
 // DELETE: Eliminar un registro por ID y Tipo
-app.delete('/api/records/:tipo_registro/:id', async (req, res) => {
+app.delete('/api/records/:tipo_registro/:id', validateJWT, async (req, res) => {
     try {
         const { tipo_registro, id } = req.params;
 

@@ -26,3 +26,5 @@ firestore-debug.*.log
 # OS
 .DS_Store
 Thumbs.db
+
+frontend

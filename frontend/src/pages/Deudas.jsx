@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Wallet, Trash2, PenSquare, X, Check, PlusCircle, SlidersHorizontal, AlertCircle } from 'lucide-react';
+import { apiFetch } from '../utils/apiFetch';
 
 // ---------- Modal Agregar Deuda ----------
 function AddDebtModal({ isOpen, onClose, currency, refreshData }) {
@@ -13,9 +14,9 @@ function AddDebtModal({ isOpen, onClose, currency, refreshData }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records`, {
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        
         body: JSON.stringify({
           tipo_registro: 'deuda',
           payload: {
@@ -113,9 +114,9 @@ function EditDebtModal({ isOpen, onClose, deuda, currency, refreshData }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records/deuda/${deuda._id}`, {
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/deuda/${deuda._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        
         body: JSON.stringify({ monto_pagado: nuevoTotal })
       });
       const data = await res.json();
@@ -197,7 +198,7 @@ function Deudas({ currency, raw, refreshData }) {
     if (!window.confirm('¿Eliminar esta deuda?')) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records/deuda/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/deuda/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) refreshData();
       else alert('Error: ' + data.message);

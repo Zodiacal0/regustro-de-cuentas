@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
+import { apiFetch } from '../utils/apiFetch';
 
 function AddAccountModal({ isOpen, onClose, currency, refreshData }) {
   const [formData, setFormData] = useState({
@@ -27,9 +28,8 @@ function AddAccountModal({ isOpen, onClose, currency, refreshData }) {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records`, {
+      const response = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       

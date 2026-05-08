@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Filter, Trash2 } from 'lucide-react';
 import AddTransactionModal from '../components/AddTransactionModal';
+import { apiFetch } from '../utils/apiFetch';
 
 function Transactions({ currency, transactions, refreshData, raw }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,7 +32,7 @@ function Transactions({ currency, transactions, refreshData, raw }) {
     setConfirmId(null);
     try {
       const tipo = tx.isExpense ? 'gasto' : 'entrada';
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records/${tipo}/${tx._id}`, { method: 'DELETE' });
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/${tipo}/${tx._id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         refreshData();

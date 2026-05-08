@@ -11,6 +11,10 @@ import Settings from './pages/Settings';
 import Goals from './pages/Goals';
 import Fondos from './pages/Fondos';
 import Deudas from './pages/Deudas';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ProtectedRoute from './components/ProtectedRoute';
+import { apiFetch } from './utils/apiFetch';
 
 const PAGE_META = {
   '/':             { title: 'Hola, ¡Bienvenido de vuelta!',    desc: 'Explora la información y actividad financiera de tus registros.' },
@@ -36,7 +40,7 @@ function AppLayout() {
   const fetchRecords = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records`);
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records`);
       const json = await res.json();
       if (json.success) setGlobalData(json.data);
     } catch (e) {
@@ -100,7 +104,15 @@ function AppLayout() {
 function App() {
   return (
     <Router>
-      <AppLayout />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/*" element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        } />
+      </Routes>
     </Router>
   );
 }

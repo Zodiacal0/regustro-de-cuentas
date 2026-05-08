@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { X, Check, PlusCircle, SlidersHorizontal } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { apiFetch } from '../utils/apiFetch';
 
 function EditGoalModal({ isOpen, onClose, currency, refreshData, activeGoal }) {
   const [mode, setMode] = useState('abono'); // 'abono' | 'total'
@@ -31,9 +32,9 @@ function EditGoalModal({ isOpen, onClose, currency, refreshData, activeGoal }) {
       monto_objetivo: activeGoal.monto_objetivo
     };
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records/objetivo/${activeGoal._id}`, {
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/objetivo/${activeGoal._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        
         body: JSON.stringify(payload)
       });
       const data = await res.json();

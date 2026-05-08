@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Target, PenSquare, Trash2, Trophy } from 'lucide-react';
 import AddGoalModal from '../components/AddGoalModal';
 import EditGoalModal from '../components/EditGoalModal';
+import { apiFetch } from '../utils/apiFetch';
 
 function Goals({ currency, raw, refreshData }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,7 +14,7 @@ function Goals({ currency, raw, refreshData }) {
     if (!window.confirm('¿Eliminar este objetivo?')) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/records/objetivo/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/objetivo/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) refreshData();
       else alert('Error al eliminar: ' + data.message);

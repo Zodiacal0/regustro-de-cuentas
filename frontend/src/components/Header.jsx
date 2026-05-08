@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
-import { Search, Bell, User, Menu } from 'lucide-react';
+import { Search, Bell, User, Menu, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Header({ currency, setCurrency, title, description, searchQuery, setSearchQuery, toggleSidebar }) {
   const [showMenu, setShowMenu] = useState(false);
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <div className="header">
@@ -61,8 +70,10 @@ function Header({ currency, setCurrency, title, description, searchQuery, setSea
               minWidth: '150px',
               zIndex: 50
             }}>
-              <div style={{padding: '8px 20px', cursor: 'pointer', fontSize: '14px'}}>Mi Perfil</div>
-              <div style={{padding: '8px 20px', cursor: 'pointer', fontSize: '14px', color: 'var(--danger)'}}>Cerrar Sesión</div>
+              {user && <div style={{padding: '8px 20px', fontSize: '13px', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)', paddingBottom: '10px', marginBottom: '4px'}}>{user.name}</div>}
+              <div onClick={handleLogout} style={{padding: '8px 20px', cursor: 'pointer', fontSize: '14px', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <LogOut size={14} /> Cerrar Sesión
+              </div>
             </div>
           )}
         </div>
