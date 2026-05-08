@@ -11,7 +11,7 @@ const COLLECTION_MAP = {
 };
 
 // Motor Determinístico de Eliminación (Layer 3)
-async function deleteRecord(tipo_registro, id) {
+async function deleteRecord(tipo_registro, id, uid) {
     if (!ObjectId.isValid(id)) {
         return { success: false, message: "ID de registro inválido", data: null };
     }
@@ -29,7 +29,7 @@ async function deleteRecord(tipo_registro, id) {
 
         // Para entradas/gastos: revertir saldos antes de eliminar
         if (tipo_registro === 'entrada' || tipo_registro === 'gasto') {
-            const existing = await collection.findOne({ _id: new ObjectId(id) });
+            const existing = await collection.findOne({ _id: new ObjectId(id), uid });
 
             if (!existing) {
                 return { success: false, message: "No se encontró el registro con el ID especificado.", data: null };
@@ -82,7 +82,7 @@ async function deleteRecord(tipo_registro, id) {
             }
         }
 
-        const result = await collection.deleteOne({ _id: new ObjectId(id) });
+        const result = await collection.deleteOne({ _id: new ObjectId(id), uid });
 
         if (result.deletedCount === 0) {
             return { success: false, message: "No se encontró el registro con el ID especificado.", data: null };

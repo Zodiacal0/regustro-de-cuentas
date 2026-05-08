@@ -27,7 +27,7 @@ function validarEntradaOGasto(payload, esGasto) {
 
 // --- Motor determinístico de inserción ---
 
-async function insertRecord(tipo_registro, payload) {
+async function insertRecord(tipo_registro, payload, uid) {
     const syncWarnings = [];
 
     try {
@@ -75,7 +75,7 @@ async function insertRecord(tipo_registro, payload) {
         }
 
         const collection = db.collection(collectionName);
-        const result = await collection.insertOne(payload);
+        const result = await collection.insertOne({ ...payload, uid });
 
         // B.L.A.S.T Autocorrection: sincronización dinámica de saldos
         if (tipo_registro === 'entradas' || tipo_registro === 'gastos') {

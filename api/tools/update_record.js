@@ -20,7 +20,7 @@ const COLLECTION_MAP = {
 };
 
 // Motor Determinístico de Actualización (Layer 3)
-async function updateRecord(tipo_registro, id, payload) {
+async function updateRecord(tipo_registro, id, payload, uid) {
     if (!ObjectId.isValid(id)) {
         return { success: false, message: "ID de registro inválido", data: null };
     }
@@ -46,7 +46,7 @@ async function updateRecord(tipo_registro, id, payload) {
 
         // Para deudas: recalcular porcentaje_pagado
         if (tipo_registro === 'deuda') {
-            const existing = await collection.findOne({ _id: new ObjectId(id) });
+            const existing = await collection.findOne({ _id: new ObjectId(id), uid });
             if (!existing) {
                 return { success: false, message: "No se encontró el registro con el ID especificado.", data: null };
             }
@@ -62,7 +62,7 @@ async function updateRecord(tipo_registro, id, payload) {
 
         // Para objetivos: recalcular porcentaje siempre, incluso con update parcial
         if (tipo_registro === 'objetivo') {
-            const existing = await collection.findOne({ _id: new ObjectId(id) });
+            const existing = await collection.findOne({ _id: new ObjectId(id), uid });
             if (!existing) {
                 return { success: false, message: "No se encontró el registro con el ID especificado.", data: null };
             }
@@ -78,7 +78,7 @@ async function updateRecord(tipo_registro, id, payload) {
 
         // Para entradas/gastos: sincronizar delta de saldo si cambió el monto
         if ((tipo_registro === 'entrada' || tipo_registro === 'gasto') && sanitizedPayload.monto !== undefined) {
-            const existing = await collection.findOne({ _id: new ObjectId(id) });
+            const existing = await collection.findOne({ _id: new ObjectId(id), uid });
             if (existing && typeof existing.monto === 'number') {
                 const delta = sanitizedPayload.monto - existing.monto;
                 const isGasto = tipo_registro === 'gasto';
@@ -128,7 +128,7 @@ async function updateRecord(tipo_registro, id, payload) {
         }
 
         const result = await collection.updateOne(
-            { _id: new ObjectId(id) },
+            { _id: new ObjectId(id), uid },
             { $set: sanitizedPayload }
         );
 

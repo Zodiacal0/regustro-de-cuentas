@@ -29,7 +29,7 @@ app.use('/api/auth', authRoutes);
 // GET: Extraer todo el panorama contable
 app.get('/api/records', validateJWT, async (req, res) => {
     try {
-        const result = await getAllRecords();
+        const result = await getAllRecords(req.uid);
         if (result.success) {
             res.status(200).json(result);
         } else {
@@ -53,7 +53,7 @@ app.post('/api/records', validateJWT, async (req, res) => {
             });
         }
 
-        const result = await insertRecord(tipo_registro, payload);
+        const result = await insertRecord(tipo_registro, payload, req.uid);
 
         if (result.success) {
             res.status(201).json(result);
@@ -84,7 +84,7 @@ app.put('/api/records/:tipo_registro/:id', validateJWT, async (req, res) => {
             });
         }
 
-        const result = await updateRecord(tipo_registro, id, payload);
+        const result = await updateRecord(tipo_registro, id, payload, req.uid);
         if (result.success) {
             res.status(200).json(result);
         } else {
@@ -112,7 +112,7 @@ app.delete('/api/records/:tipo_registro/:id', validateJWT, async (req, res) => {
             });
         }
 
-        const result = await deleteRecord(tipo_registro, id);
+        const result = await deleteRecord(tipo_registro, id, req.uid);
         if (result.success) {
             res.status(200).json(result);
         } else {
