@@ -14,7 +14,7 @@ function EditSaldoModal({ item, tipo, currency, onClose, refreshData }) {
     try {
       const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/${tipo}/${item._id}`, {
         method: 'PUT',
-        
+
         body: JSON.stringify({ saldo: Number(saldo) })
       });
       const data = await res.json();
@@ -106,14 +106,14 @@ function Fondos({ currency, raw, refreshData }) {
   const [showAccountModal, setShowAccountModal] = useState(false);
 
   const tarjetas = raw?.tarjetas || [];
-  const cuentas  = raw?.cuentas  || [];
+  const cuentas = raw?.cuentas || [];
 
   const totalLiquidez = cuentas.reduce((a, c) => a + c.saldo, 0);
   const totalDeudaTarjetas = tarjetas.filter(t => t.tipo === 'Crédito').reduce((a, t) => a + t.saldo, 0);
   const totalDebito = tarjetas.filter(t => t.tipo === 'Débito').reduce((a, t) => a + t.saldo, 0);
 
   return (
-    <div className="card" style={{ padding: '30px', minHeight: '70vh' }}>
+    <div className="card" style={{ padding: '30px', minHeight: 'auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'flex-start' }}>
         <div>

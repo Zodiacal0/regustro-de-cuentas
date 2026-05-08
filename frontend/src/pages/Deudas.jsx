@@ -16,7 +16,7 @@ function AddDebtModal({ isOpen, onClose, currency, refreshData }) {
     try {
       const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records`, {
         method: 'POST',
-        
+
         body: JSON.stringify({
           tipo_registro: 'deuda',
           payload: {
@@ -52,16 +52,16 @@ function AddDebtModal({ isOpen, onClose, currency, refreshData }) {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Nombre / Concepto</label>
-              <input type="text" required placeholder="Ej. Préstamo auto, Tarjeta HSBC..." value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} />
+              <input type="text" required placeholder="Ej. Préstamo auto, Tarjeta HSBC..." value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
             </div>
             <div className="form-row">
               <div className="form-group">
                 <label>Acreedor (opcional)</label>
-                <input type="text" placeholder="Ej. Banco, Persona..." value={form.acreedor} onChange={e => setForm({...form, acreedor: e.target.value})} />
+                <input type="text" placeholder="Ej. Banco, Persona..." value={form.acreedor} onChange={e => setForm({ ...form, acreedor: e.target.value })} />
               </div>
               <div className="form-group">
                 <label>Vencimiento (opcional)</label>
-                <input type="date" value={form.fecha_vencimiento} onChange={e => setForm({...form, fecha_vencimiento: e.target.value})} />
+                <input type="date" value={form.fecha_vencimiento} onChange={e => setForm({ ...form, fecha_vencimiento: e.target.value })} />
               </div>
             </div>
             <div className="form-row">
@@ -69,20 +69,20 @@ function AddDebtModal({ isOpen, onClose, currency, refreshData }) {
                 <label>Monto Total</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ color: 'var(--text-muted)' }}>{currency}</span>
-                  <input type="number" step="0.01" required min="0.01" style={{ flex: 1 }} value={form.monto_total} onChange={e => setForm({...form, monto_total: e.target.value})} />
+                  <input type="number" step="0.01" required min="0.01" style={{ flex: 1 }} value={form.monto_total} onChange={e => setForm({ ...form, monto_total: e.target.value })} />
                 </div>
               </div>
               <div className="form-group">
                 <label>Ya pagado</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ color: 'var(--text-muted)' }}>{currency}</span>
-                  <input type="number" step="0.01" min="0" style={{ flex: 1 }} value={form.monto_pagado} onChange={e => setForm({...form, monto_pagado: e.target.value})} />
+                  <input type="number" step="0.01" min="0" style={{ flex: 1 }} value={form.monto_pagado} onChange={e => setForm({ ...form, monto_pagado: e.target.value })} />
                 </div>
               </div>
             </div>
             <div className="form-group">
               <label>Notas (opcional)</label>
-              <input type="text" placeholder="Tasa, cuotas, observaciones..." value={form.notas} onChange={e => setForm({...form, notas: e.target.value})} />
+              <input type="text" placeholder="Tasa, cuotas, observaciones..." value={form.notas} onChange={e => setForm({ ...form, notas: e.target.value })} />
             </div>
             <button type="submit" className="submit-btn" disabled={loading}>{loading ? 'Guardando...' : 'Registrar Deuda'}</button>
           </form>
@@ -116,7 +116,7 @@ function EditDebtModal({ isOpen, onClose, deuda, currency, refreshData }) {
     try {
       const res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/deuda/${deuda._id}`, {
         method: 'PUT',
-        
+
         body: JSON.stringify({ monto_pagado: nuevoTotal })
       });
       const data = await res.json();
@@ -213,7 +213,7 @@ function Deudas({ currency, raw, refreshData }) {
 
   return (
     <>
-      <div className="card" style={{ padding: '30px', minHeight: '60vh' }}>
+      <div className="card" style={{ padding: '30px', minHeight: 'auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'flex-start' }}>
           <div>
