@@ -9,18 +9,19 @@ async function getAllRecords(uid) {
         const db = await getDb();
         const filter = { uid };
 
-        const [entradas, gastos, objetivos, tarjetas, cuentas, deudas] = await Promise.all([
+        const [entradas, gastos, objetivos, tarjetas, cuentas, deudas, presupuestos] = await Promise.all([
             db.collection('entradas').find(filter).sort({ fecha: -1 }).toArray(),
             db.collection('gastos').find(filter).sort({ fecha: -1 }).toArray(),
             db.collection('objetivos').find(filter).toArray(),
             db.collection('tarjetas').find(filter).toArray(),
             db.collection('cuentas').find(filter).toArray(),
-            db.collection('deudas').find(filter).toArray()
+            db.collection('deudas').find(filter).toArray(),
+            db.collection('presupuestos').find(filter).toArray()
         ]);
 
         return {
             success: true,
-            data: { entradas, gastos, objetivos, tarjetas, cuentas, deudas }
+            data: { entradas, gastos, objetivos, tarjetas, cuentas, deudas, presupuestos }
         };
 
     } catch (error) {

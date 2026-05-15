@@ -61,6 +61,18 @@ async function insertRecord(tipo_registro, payload, uid) {
                 throw new Error("Cuenta: nombre, tipo y saldo (número) son obligatorios");
             }
             collectionName = 'cuentas';
+        } else if (tipo_registro === 'presupuesto') {
+            if (!payload.nombre || typeof payload.nombre !== 'string')
+                throw new Error("Presupuesto: nombre requerido");
+            if (typeof payload.monto_limite !== 'number' || payload.monto_limite <= 0)
+                throw new Error("Presupuesto: monto_limite debe ser un número mayor a 0");
+            if (!payload.categoria || typeof payload.categoria !== 'string')
+                throw new Error("Presupuesto: categoria requerida");
+            if (!['mensual', 'semanal', 'quincenal', 'anual'].includes(payload.periodo))
+                throw new Error("Presupuesto: periodo inválido");
+            payload.rollover = payload.rollover === true;
+            payload.color = payload.color || '#3a5849';
+            collectionName = 'presupuestos';
         } else if (tipo_registro === 'deuda') {
             if (!payload.nombre || typeof payload.monto_total !== 'number' || payload.monto_total <= 0) {
                 throw new Error("Deuda: nombre y monto_total (número > 0) son obligatorios");

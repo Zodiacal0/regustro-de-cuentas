@@ -5,7 +5,7 @@ import AddCardModal from '../components/AddCardModal';
 import AddTransactionModal from '../components/AddTransactionModal';
 import AddAccountModal from '../components/AddAccountModal';
 
-const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const PERIOD_LABELS = { week: 'Esta Semana', month: 'Este Mes', year: 'Este Año', all: 'Todo' };
 
 const formatMonthLabel = (ym) => {
@@ -30,7 +30,7 @@ function filterByPeriod(transactions, period, customMonth) {
       return d >= weekAgo;
     }
     if (period === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    if (period === 'year')  return d.getFullYear() === now.getFullYear();
+    if (period === 'year') return d.getFullYear() === now.getFullYear();
     return true;
   });
 }
@@ -98,8 +98,8 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
   const periodTx = useMemo(() => filterByPeriod(transactions, period, customMonth), [transactions, period, customMonth]);
 
   const totalIngresos = useMemo(() => periodTx.filter(t => !t.isExpense).reduce((a, t) => a + t.monto, 0), [periodTx]);
-  const totalGastos   = useMemo(() => periodTx.filter(t =>  t.isExpense).reduce((a, t) => a + t.monto, 0), [periodTx]);
-  const balanceTotal  = totalIngresos - totalGastos;
+  const totalGastos = useMemo(() => periodTx.filter(t => t.isExpense).reduce((a, t) => a + t.monto, 0), [periodTx]);
+  const balanceTotal = totalIngresos - totalGastos;
 
   const chartData = useMemo(() => {
     const map = {};
@@ -172,18 +172,18 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
       <div className="dashboard-grid">
         <div className="card">
           <div className="kpi-title">Gastos <ArrowDownRight size={16} color="var(--danger)" /></div>
-          <div className="kpi-value" style={{color: 'var(--text-main)'}}>{currency}{totalGastos.toFixed(2)}</div>
-          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{periodLabel}</div>
+          <div className="kpi-value" style={{ color: 'var(--text-main)' }}>{currency}{totalGastos.toFixed(2)}</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px' }}>{periodLabel}</div>
         </div>
         <div className="card">
           <div className="kpi-title">Ingresos <ArrowUpRight size={16} color="var(--success)" /></div>
-          <div className="kpi-value" style={{color: 'var(--text-main)'}}>{currency}{totalIngresos.toFixed(2)}</div>
-          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{periodLabel}</div>
+          <div className="kpi-value" style={{ color: 'var(--text-main)' }}>{currency}{totalIngresos.toFixed(2)}</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px' }}>{periodLabel}</div>
         </div>
         <div className="card">
           <div className="kpi-title">Balance Neto</div>
           <div className="kpi-value" style={{ color: balanceTotal >= 0 ? 'var(--success)' : 'var(--danger)' }}>{currency}{balanceTotal.toFixed(2)}</div>
-          <div style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px'}}>{periodLabel}</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '5px' }}>{periodLabel}</div>
         </div>
         <div className="card card-dark">
           <div className="kpi-title">
@@ -199,8 +199,8 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
         <div className="card chart-card">
           <div className="chart-header">
             <div>
-              <h3 style={{fontSize: '18px', fontWeight: '600'}}>Análisis de Balance</h3>
-              <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Histórico · {periodLabel}</p>
+              <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Análisis de Balance</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Histórico · {periodLabel}</p>
             </div>
             <div className="chart-controls">
               <div className="chart-filters">
@@ -215,24 +215,24 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
               </div>
             </div>
           </div>
-          <div className={chartAnim} style={{flex: 1, width: '100%', height: '100%', minHeight: '250px'}}>
+          <div className={chartAnim} style={{ flex: 1, width: '100%', height: '100%', minHeight: '250px' }}>
             {chartData.length === 0 ? (
-              <div style={{display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)'}}>Sin datos para el período seleccionado</div>
+              <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Sin datos para el período seleccionado</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 {activeChart === 'line' ? (
                   <LineChart data={chartData}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                    <Tooltip cursor={{stroke: '#e5e7eb', strokeWidth: 1}} contentStyle={{borderRadius: '8px', border: 'none'}} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                    <Tooltip cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }} contentStyle={{ borderRadius: '8px', border: 'none' }} />
                     <Line type="monotone" dataKey="income" stroke="#2563eb" strokeWidth={3} dot={true} />
                     <Line type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={3} dot={true} />
                   </LineChart>
                 ) : (
                   <BarChart data={chartData}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                    <Tooltip cursor={{fill: '#f3f4f6'}} contentStyle={{borderRadius: '8px', border: 'none'}} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                    <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none' }} />
                     <Bar dataKey="income" fill="#2563eb" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -245,13 +245,13 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
         <div className="card chart-card">
           <div className="chart-header">
             <div>
-              <h3 style={{fontSize: '18px', fontWeight: '600'}}>Composición</h3>
-              <p style={{fontSize: '13px', color: 'var(--text-muted)'}}>Gastos · {periodLabel}</p>
+              <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Composición</h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Gastos · {periodLabel}</p>
             </div>
           </div>
-          <div style={{flex: 1, width: '100%', height: '100%', minHeight: '200px'}}>
+          <div style={{ flex: 1, width: '100%', height: '100%', minHeight: '200px' }}>
             {pieData.length === 0 ? (
-              <div style={{display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)'}}>Sin gastos a categorizar</div>
+              <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Sin gastos a categorizar</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -260,7 +260,7 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{borderRadius: '8px', border: 'none'}} />
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none' }} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -272,19 +272,19 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
       <div className="widgets-grid">
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <h3 style={{fontSize: '18px', fontWeight: '600'}}>Cuentas & Movimientos</h3>
-            <button className="filter-btn" onClick={() => setIsTxModalOpen(true)} style={{ background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', gap: '5px'}}>
+            <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Cuentas & Movimientos</h3>
+            <button className="filter-btn" onClick={() => setIsTxModalOpen(true)} style={{ background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <Plus size={16} /> Agregar
             </button>
           </div>
-          <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: 'auto', overflowY: 'auto' }}>
             <table className="table-lite">
               <thead>
                 <tr>
                   <th>Descripción</th>
                   <th>Categoría</th>
                   <th>Fecha</th>
-                  <th style={{textAlign: 'right'}}>Monto</th>
+                  <th style={{ textAlign: 'right' }}>Monto</th>
                 </tr>
               </thead>
               <tbody>
@@ -292,17 +292,17 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
                   const date = new Date(tx.fecha);
                   return (
                     <tr key={idx}>
-                      <td data-label="Descripción" style={{fontWeight: '500'}}>{tx.descripcion}</td>
+                      <td data-label="Descripción" style={{ fontWeight: '500' }}>{tx.descripcion}</td>
                       <td data-label="Categoría">{tx.categoria}</td>
-                      <td data-label="Fecha" style={{color: 'var(--text-muted)'}}>{date.toLocaleDateString()}</td>
-                      <td data-label="Monto" style={{textAlign: 'right', color: tx.isExpense ? 'var(--danger)' : 'var(--success)', fontWeight: '500'}}>
+                      <td data-label="Fecha" style={{ color: 'var(--text-muted)' }}>{date.toLocaleDateString()}</td>
+                      <td data-label="Monto" style={{ textAlign: 'right', color: tx.isExpense ? 'var(--danger)' : 'var(--success)', fontWeight: '500' }}>
                         {tx.isExpense ? '-' : '+'} {currency}{tx.monto.toFixed(2)}
                       </td>
                     </tr>
                   );
                 })}
                 {transactions.length === 0 && (
-                  <tr><td colSpan="4" style={{textAlign: 'center', color: 'var(--text-muted)'}}>No hay transacciones guardadas.</td></tr>
+                  <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No hay transacciones guardadas.</td></tr>
                 )}
               </tbody>
             </table>
@@ -313,36 +313,36 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
           {/* WIDGET CUENTAS */}
           {!currentCuenta ? (
             <div className="cuenta-widget" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <p style={{opacity: 0.8}}>No tienes cuentas bancarias</p>
+              <p style={{ opacity: 0.8 }}>No tienes cuentas bancarias</p>
             </div>
           ) : (
             <div className={`cuenta-widget ${cuentaAnim}`}>
               {userCuentas.length > 1 && (
-                <div style={{position: 'absolute', top: '15px', right: '15px'}}>
-                  <select value={cuentaIndex} onChange={(e) => handleCuentaSelect(Number(e.target.value))} style={{background: 'rgba(255,255,255,0.9)', border: 'none', color: 'var(--text-main)', borderRadius: '15px', cursor: 'pointer', padding: '6px 12px', fontSize: '12px', outline: 'none', appearance: 'none', fontWeight: '500'}}>
+                <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
+                  <select value={cuentaIndex} onChange={(e) => handleCuentaSelect(Number(e.target.value))} style={{ background: 'rgba(255,255,255,0.9)', border: 'none', color: 'var(--text-main)', borderRadius: '15px', cursor: 'pointer', padding: '6px 12px', fontSize: '12px', outline: 'none', appearance: 'none', fontWeight: '500' }}>
                     {userCuentas.map((c, idx) => (<option key={c._id} value={idx}>{c.nombre}</option>))}
                   </select>
                 </div>
               )}
-              <div className="cc-label" style={{opacity: 1, fontSize: '14px', marginBottom: '15px'}}><Landmark size={20} style={{display: 'inline', verticalAlign: 'middle', marginRight: '5px'}} /> LIQUIDEZ Y BANCOS</div>
+              <div className="cc-label" style={{ opacity: 1, fontSize: '14px', marginBottom: '15px' }}><Landmark size={20} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '5px' }} /> LIQUIDEZ Y BANCOS</div>
               <div className="cc-label">{currentCuenta.nombre} • {currentCuenta.tipo}</div>
               <div className="cc-balance">SALDO: {currency}{currentCuenta.saldo.toFixed(2)}</div>
             </div>
           )}
-          <button className="btn-add-card" onClick={() => setIsAccountModalOpen(true)} style={{marginBottom: '25px'}}>
+          <button className="btn-add-card" onClick={() => setIsAccountModalOpen(true)} style={{ marginBottom: '25px' }}>
             <Landmark size={18} /> Agregar Cuenta
           </button>
 
           {/* WIDGET TARJETAS */}
           {!currentCard ? (
             <div className="cc-widget" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <p style={{opacity: 0.8}}>No tienes tarjetas vinculadas</p>
+              <p style={{ opacity: 0.8 }}>No tienes tarjetas vinculadas</p>
             </div>
           ) : (
             <div className={`cc-widget ${cardAnim}`}>
               {userCards.length > 1 && (
-                <div style={{position: 'absolute', top: '15px', right: '15px'}}>
-                  <select value={cardIndex} onChange={(e) => handleCardSelect(Number(e.target.value))} style={{background: 'rgba(255,255,255,0.9)', border: 'none', color: 'var(--text-main)', borderRadius: '15px', cursor: 'pointer', padding: '6px 12px', fontSize: '12px', outline: 'none', appearance: 'none', fontWeight: '500'}}>
+                <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
+                  <select value={cardIndex} onChange={(e) => handleCardSelect(Number(e.target.value))} style={{ background: 'rgba(255,255,255,0.9)', border: 'none', color: 'var(--text-main)', borderRadius: '15px', cursor: 'pointer', padding: '6px 12px', fontSize: '12px', outline: 'none', appearance: 'none', fontWeight: '500' }}>
                     {userCards.map((c, idx) => (<option key={c._id} value={idx}>{c.nombre}</option>))}
                   </select>
                 </div>
@@ -352,7 +352,7 @@ function Dashboard({ currency, raw, transactions, refreshData }) {
               <div className="cc-balance">{currentCard.tipo === 'Crédito' ? 'ADEUDO' : 'SALDO'}: {currency}{currentCard.saldo.toFixed(2)}</div>
               <div className="cc-details">
                 <span>{currentCard.fecha_corte ? `Corte: ${currentCard.fecha_corte} del mes` : 'Al Contado'}</span>
-                {userCards.length > 1 && <span style={{cursor: 'pointer', opacity: 0.8}} onClick={nextCard}>Siguiente →</span>}
+                {userCards.length > 1 && <span style={{ cursor: 'pointer', opacity: 0.8 }} onClick={nextCard}>Siguiente →</span>}
               </div>
             </div>
           )}

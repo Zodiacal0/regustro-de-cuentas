@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, BarChart3, Target, Settings, Activity, X, Wallet, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Receipt, BarChart3, Target, Settings, Activity, X, Wallet, CreditCard, PieChart } from 'lucide-react';
 
 function Sidebar({ isOpen, toggleSidebar }) {
   const closeSidebarOnMobile = () => {
@@ -42,6 +42,10 @@ function Sidebar({ isOpen, toggleSidebar }) {
 
       <NavLink to="/deudas" onClick={closeSidebarOnMobile} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
         <CreditCard size={20} /> Deudas
+      </NavLink>
+
+      <NavLink to="/presupuesto" onClick={closeSidebarOnMobile} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+        <PieChart size={20} /> Presupuesto
       </NavLink>
 
       <div style={{ flex: 1 }}></div>

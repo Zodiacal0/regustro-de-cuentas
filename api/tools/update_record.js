@@ -2,21 +2,23 @@ const { getDb } = require('../db');
 const { ObjectId } = require('mongodb');
 
 const ALLOWED_FIELDS = {
-    objetivo: ['nombre', 'monto_actual', 'monto_objetivo'],
-    cuenta:   ['nombre', 'tipo', 'saldo'],
-    tarjeta:  ['nombre', 'tipo', 'saldo', 'fecha_corte'],
-    entrada:  ['descripcion', 'monto', 'fecha', 'categoria', 'cuenta_id', 'tarjeta_id'],
-    gasto:    ['descripcion', 'monto', 'fecha', 'categoria', 'metodo_pago', 'cuenta_id', 'tarjeta_id'],
-    deuda:    ['nombre', 'acreedor', 'monto_total', 'monto_pagado', 'notas', 'fecha_vencimiento']
+    objetivo:     ['nombre', 'monto_actual', 'monto_objetivo'],
+    cuenta:       ['nombre', 'tipo', 'saldo'],
+    tarjeta:      ['nombre', 'tipo', 'saldo', 'fecha_corte'],
+    entrada:      ['descripcion', 'monto', 'fecha', 'categoria', 'cuenta_id', 'tarjeta_id'],
+    gasto:        ['descripcion', 'monto', 'fecha', 'categoria', 'metodo_pago', 'cuenta_id', 'tarjeta_id'],
+    deuda:        ['nombre', 'acreedor', 'monto_total', 'monto_pagado', 'notas', 'fecha_vencimiento'],
+    presupuesto:  ['nombre', 'categoria', 'monto_limite', 'periodo', 'color', 'rollover']
 };
 
 const COLLECTION_MAP = {
-    objetivo: 'objetivos',
-    cuenta:   'cuentas',
-    tarjeta:  'tarjetas',
-    entrada:  'entradas',
-    gasto:    'gastos',
-    deuda:    'deudas'
+    objetivo:    'objetivos',
+    cuenta:      'cuentas',
+    tarjeta:     'tarjetas',
+    entrada:     'entradas',
+    gasto:       'gastos',
+    deuda:       'deudas',
+    presupuesto: 'presupuestos'
 };
 
 // Motor Determinístico de Actualización (Layer 3)

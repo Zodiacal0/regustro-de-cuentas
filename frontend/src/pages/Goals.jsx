@@ -27,7 +27,7 @@ function Goals({ currency, raw, refreshData }) {
 
   return (
     <>
-      <div className="card" style={{ padding: '30px', minHeight: '60vh' }}>
+      <div className="card" style={{ padding: '30px' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'flex-start' }}>
           <div>

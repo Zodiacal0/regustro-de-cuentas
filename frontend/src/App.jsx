@@ -11,6 +11,7 @@ import Settings from './pages/Settings';
 import Goals from './pages/Goals';
 import Fondos from './pages/Fondos';
 import Deudas from './pages/Deudas';
+import Presupuesto from './pages/Presupuesto';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -24,6 +25,7 @@ const PAGE_META = {
   '/objetivos':    { title: 'Metas Financieras',                desc: 'Persigue tus metas conectando tus ahorros e inversiones.' },
   '/fondos':       { title: 'Gestión de Fondos',                desc: 'Administra tus cuentas bancarias, tarjetas y efectivo.' },
   '/deudas':       { title: 'Control de Deudas',                desc: 'Rastrea y salda tus compromisos financieros.' },
+  '/presupuesto':  { title: 'Presupuestos',                     desc: 'Controla tus límites de gasto por categoría y período.' },
 };
 
 function AppLayout() {
@@ -34,7 +36,7 @@ function AppLayout() {
 
   const [loading, setLoading] = useState(true);
   const [globalData, setGlobalData] = useState({
-    entradas: [], gastos: [], objetivos: [], tarjetas: [], cuentas: [], deudas: []
+    entradas: [], gastos: [], objetivos: [], tarjetas: [], cuentas: [], deudas: [], presupuestos: []
   });
 
   const fetchRecords = async () => {
@@ -93,6 +95,7 @@ function AppLayout() {
             <Route path="/objetivos" element={<Goals currency={currency} raw={globalData} refreshData={fetchRecords} />} />
             <Route path="/fondos" element={<Fondos currency={currency} raw={globalData} refreshData={fetchRecords} />} />
             <Route path="/deudas" element={<Deudas currency={currency} raw={globalData} refreshData={fetchRecords} />} />
+            <Route path="/presupuesto" element={<Presupuesto currency={currency} raw={globalData} refreshData={fetchRecords} />} />
             <Route path="/ajustes" element={<Settings />} />
           </Routes>
         )}

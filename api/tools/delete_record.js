@@ -2,12 +2,13 @@ const { getDb } = require('../db');
 const { ObjectId } = require('mongodb');
 
 const COLLECTION_MAP = {
-    objetivo: 'objetivos',
-    cuenta:   'cuentas',
-    tarjeta:  'tarjetas',
-    entrada:  'entradas',
-    gasto:    'gastos',
-    deuda:    'deudas'
+    objetivo:    'objetivos',
+    cuenta:      'cuentas',
+    tarjeta:     'tarjetas',
+    entrada:     'entradas',
+    gasto:       'gastos',
+    deuda:       'deudas',
+    presupuesto: 'presupuestos'
 };
 
 // Motor Determinístico de Eliminación (Layer 3)

@@ -47,7 +47,7 @@ function Transactions({ currency, transactions, refreshData, raw }) {
   };
 
   return (
-    <div className="card" style={{ padding: '30px', minHeight: '83vh' }}>
+    <div className="card" style={{ padding: '30px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
         <h3 style={{ fontSize: '20px', fontWeight: '600' }}>Historial Completo</h3>
         <div style={{ display: 'flex', gap: '10px', position: 'relative' }}>
