@@ -8,7 +8,8 @@ const COLLECTION_MAP = {
     entrada:     'entradas',
     gasto:       'gastos',
     deuda:       'deudas',
-    presupuesto: 'presupuestos'
+    presupuesto:  'presupuestos',
+    ingreso_base: 'presupuestos'
 };
 
 // Motor Determinístico de Eliminación (Layer 3)

@@ -8,7 +8,8 @@ const ALLOWED_FIELDS = {
     entrada:      ['descripcion', 'monto', 'fecha', 'categoria', 'cuenta_id', 'tarjeta_id'],
     gasto:        ['descripcion', 'monto', 'fecha', 'categoria', 'metodo_pago', 'cuenta_id', 'tarjeta_id'],
     deuda:        ['nombre', 'acreedor', 'monto_total', 'monto_pagado', 'notas', 'fecha_vencimiento'],
-    presupuesto:  ['nombre', 'categoria', 'monto_limite', 'periodo', 'color', 'rollover', 'fecha_inicio', 'fecha_fin']
+    presupuesto:  ['nombre', 'categoria', 'monto_limite', 'periodo', 'color', 'rollover', 'fecha_inicio', 'fecha_fin'],
+    ingreso_base: ['monto', 'periodo', 'fecha_inicio', 'fecha_fin']
 };
 
 const COLLECTION_MAP = {
@@ -18,7 +19,8 @@ const COLLECTION_MAP = {
     entrada:     'entradas',
     gasto:       'gastos',
     deuda:       'deudas',
-    presupuesto: 'presupuestos'
+    presupuesto:  'presupuestos',
+    ingreso_base: 'presupuestos'
 };
 
 // Motor Determinístico de Actualización (Layer 3)

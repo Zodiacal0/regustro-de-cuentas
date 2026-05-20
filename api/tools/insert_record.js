@@ -61,6 +61,15 @@ async function insertRecord(tipo_registro, payload, uid) {
                 throw new Error("Cuenta: nombre, tipo y saldo (número) son obligatorios");
             }
             collectionName = 'cuentas';
+        } else if (tipo_registro === 'ingreso_base') {
+            if (typeof payload.monto !== 'number' || payload.monto < 0)
+                throw new Error("Ingreso base: monto debe ser un número no negativo");
+            if (!['mensual', 'semanal', 'quincenal', 'anual', 'personalizado'].includes(payload.periodo))
+                throw new Error("Ingreso base: periodo inválido");
+            if (payload.periodo === 'personalizado' && (!payload.fecha_inicio || !payload.fecha_fin))
+                throw new Error("Ingreso base personalizado: fecha_inicio y fecha_fin requeridas");
+            payload.es_ingreso_base = true;
+            collectionName = 'presupuestos';
         } else if (tipo_registro === 'presupuesto') {
             if (!payload.nombre || typeof payload.nombre !== 'string')
                 throw new Error("Presupuesto: nombre requerido");

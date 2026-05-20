@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, PenSquare, Trash2, Utensils, Car, Zap, Film, Heart, BookOpen, Shirt, Package, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
+import { Plus, PenSquare, Trash2, Utensils, Car, Zap, Film, Heart, BookOpen, Shirt, Package, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, RefreshCw, Wallet, X, Check } from 'lucide-react';
 import AddBudgetModal from '../components/AddBudgetModal';
 import { apiFetch } from '../utils/apiFetch';
 
@@ -118,6 +118,135 @@ function getStatus(pct) {
   return { label: 'En Control', color: '#10b981', bg: '#f0fdf4' };
 }
 
+function BaseCero({ baseRecord, presupuestos, currency, refreshData }) {
+  const [editando, setEditando] = useState(false);
+  const [monto, setMonto] = useState('');
+  const [periodo, setPeriodo] = useState('mensual');
+  const [loading, setLoading] = useState(false);
+
+  const totalAsignado = presupuestos.reduce((s, p) => s + p.monto_limite, 0);
+  const ingreso = baseRecord?.monto || 0;
+  const sinAsignar = ingreso - totalAsignado;
+  const pctAsignado = ingreso > 0 ? Math.min((totalAsignado / ingreso) * 100, 100) : 0;
+  const sobrepasado = totalAsignado > ingreso;
+
+  const startEdit = () => {
+    setMonto(baseRecord?.monto || '');
+    setPeriodo(baseRecord?.periodo || 'mensual');
+    setEditando(true);
+  };
+
+  const handleSave = async () => {
+    if (!monto || Number(monto) <= 0) return alert('Ingresa un monto válido');
+    setLoading(true);
+    try {
+      let res;
+      if (baseRecord) {
+        res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records/ingreso_base/${baseRecord._id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ monto: Number(monto), periodo }),
+        });
+      } else {
+        res = await apiFetch(`${import.meta.env.VITE_API_URL || ''}/api/records`, {
+          method: 'POST',
+          body: JSON.stringify({ tipo_registro: 'ingreso_base', payload: { monto: Number(monto), periodo } }),
+        });
+      }
+      const data = await res.json();
+      if (data.success) { refreshData(); setEditando(false); }
+      else alert('Error: ' + data.message);
+    } catch { alert('Error de red'); }
+    finally { setLoading(false); }
+  };
+
+  const barColor = sobrepasado ? '#ef4444' : sinAsignar === 0 ? '#10b981' : sinAsignar < ingreso * 0.1 ? '#f59e0b' : 'var(--primary)';
+
+  return (
+    <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', borderRadius: '16px', padding: '22px 24px', marginBottom: '24px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+      {/* Fondo decorativo */}
+      <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
+      <div style={{ position: 'absolute', bottom: '-30px', right: '60px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }} />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px', position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Wallet size={18} />
+          </div>
+          <div>
+            <p style={{ fontWeight: '700', fontSize: '15px', letterSpacing: '0.3px' }}>Presupuesto Base Cero</p>
+            <p style={{ fontSize: '11px', opacity: 0.6, marginTop: '1px' }}>Cada peso tiene un destino asignado</p>
+          </div>
+        </div>
+        <button onClick={startEdit} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: 'white', cursor: 'pointer', fontSize: '12px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <PenSquare size={13} /> {baseRecord ? 'Editar' : 'Configurar'}
+        </button>
+      </div>
+
+      {editando && (
+        <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px', marginBottom: '16px', position: 'relative' }}>
+          <button onClick={() => setEditando(false)} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}><X size={16} /></button>
+          <p style={{ fontSize: '12px', opacity: 0.7, marginBottom: '10px', fontWeight: '600' }}>INGRESO DEL PERÍODO</p>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', padding: '8px 12px', flex: 1, minWidth: '140px' }}>
+              <span style={{ opacity: 0.7, fontSize: '13px' }}>{currency}</span>
+              <input type="number" step="0.01" min="0.01" value={monto} onChange={e => setMonto(e.target.value)} placeholder="0.00"
+                style={{ background: 'none', border: 'none', color: 'white', fontSize: '15px', fontWeight: '600', outline: 'none', flex: 1, width: '100px' }} autoFocus />
+            </div>
+            <select value={periodo} onChange={e => setPeriodo(e.target.value)}
+              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px 12px', color: 'white', cursor: 'pointer', fontSize: '13px' }}>
+              <option value="mensual" style={{ color: '#111' }}>Mensual</option>
+              <option value="quincenal" style={{ color: '#111' }}>Quincenal</option>
+              <option value="semanal" style={{ color: '#111' }}>Semanal</option>
+              <option value="anual" style={{ color: '#111' }}>Anual</option>
+            </select>
+            <button onClick={handleSave} disabled={loading}
+              style={{ background: '#10b981', border: 'none', borderRadius: '8px', padding: '8px 16px', color: 'white', cursor: 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Check size={14} /> {loading ? '...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!baseRecord && !editando ? (
+        <div style={{ textAlign: 'center', opacity: 0.5, padding: '8px 0', fontSize: '13px' }}>
+          Configura tu ingreso base para activar el presupuesto base cero
+        </div>
+      ) : baseRecord && (
+        <>
+          {/* Números principales */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+            <div>
+              <p style={{ fontSize: '11px', opacity: 0.55, marginBottom: '3px' }}>Ingreso base</p>
+              <p style={{ fontSize: '20px', fontWeight: '700' }}>{currency}{ingreso.toFixed(2)}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '11px', opacity: 0.55, marginBottom: '3px' }}>Asignado</p>
+              <p style={{ fontSize: '20px', fontWeight: '700' }}>{currency}{totalAsignado.toFixed(2)}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '11px', opacity: 0.55, marginBottom: '3px' }}>{sobrepasado ? 'Exceso' : sinAsignar === 0 ? '¡Base cero!' : 'Sin asignar'}</p>
+              <p style={{ fontSize: '20px', fontWeight: '700', color: sobrepasado ? '#fca5a5' : sinAsignar === 0 ? '#6ee7b7' : '#fde68a' }}>
+                {sobrepasado ? '-' : ''}{currency}{Math.abs(sinAsignar).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          {/* Barra de asignación */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', opacity: 0.6, marginBottom: '5px' }}>
+              <span>{pctAsignado.toFixed(1)}% asignado</span>
+              <span>{sobrepasado ? '⚠ Excede el ingreso' : sinAsignar === 0 ? '✓ Base cero alcanzado' : `Faltan ${currency}${sinAsignar.toFixed(2)}`}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.15)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: `${Math.min(pctAsignado, 100)}%`, height: '100%', borderRadius: '4px', background: barColor, transition: 'width 0.5s ease' }} />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function BudgetCard({ budget, gastos, currency, onEdit, onDelete, deletingId }) {
   const efectiveLimite = getEfectiveLimite(budget, gastos);
   const gastado = getGastado(budget, gastos);
@@ -211,7 +340,9 @@ function Presupuesto({ currency, raw, refreshData }) {
   const [deletingId, setDeletingId] = useState(null);
 
   const gastos = raw?.gastos || [];
-  const presupuestos = raw?.presupuestos || [];
+  const todosPres = raw?.presupuestos || [];
+  const baseRecord = todosPres.find(p => p.es_ingreso_base);
+  const presupuestos = todosPres.filter(p => !p.es_ingreso_base);
 
   const handleEdit = (budget) => { setEditBudget(budget); setModalOpen(true); };
   const handleCloseModal = () => { setModalOpen(false); setEditBudget(null); };
@@ -265,6 +396,9 @@ function Presupuesto({ currency, raw, refreshData }) {
             <Plus size={16} /> Nuevo Presupuesto
           </button>
         </div>
+
+        {/* Base Cero */}
+        <BaseCero baseRecord={baseRecord} presupuestos={presupuestos} currency={currency} refreshData={refreshData} />
 
         {/* Resumen stats */}
         {presupuestos.length > 0 && (
