@@ -68,8 +68,14 @@ async function insertRecord(tipo_registro, payload, uid) {
                 throw new Error("Presupuesto: monto_limite debe ser un número mayor a 0");
             if (!payload.categoria || typeof payload.categoria !== 'string')
                 throw new Error("Presupuesto: categoria requerida");
-            if (!['mensual', 'semanal', 'quincenal', 'anual'].includes(payload.periodo))
+            if (!['mensual', 'semanal', 'quincenal', 'anual', 'personalizado'].includes(payload.periodo))
                 throw new Error("Presupuesto: periodo inválido");
+            if (payload.periodo === 'personalizado') {
+                if (!payload.fecha_inicio || !payload.fecha_fin)
+                    throw new Error("Presupuesto personalizado: fecha_inicio y fecha_fin son requeridas");
+                if (payload.fecha_fin < payload.fecha_inicio)
+                    throw new Error("Presupuesto: fecha_fin debe ser igual o posterior a fecha_inicio");
+            }
             payload.rollover = payload.rollover === true;
             payload.color = payload.color || '#3a5849';
             collectionName = 'presupuestos';

@@ -8,10 +8,11 @@ const CATEGORIAS = [
 ];
 
 const PERIODOS = [
-  { value: 'mensual',   label: 'Mensual' },
-  { value: 'quincenal', label: 'Quincenal' },
-  { value: 'semanal',   label: 'Semanal' },
-  { value: 'anual',     label: 'Anual' },
+  { value: 'mensual',      label: 'Mensual' },
+  { value: 'quincenal',    label: 'Quincenal' },
+  { value: 'semanal',      label: 'Semanal' },
+  { value: 'anual',        label: 'Anual' },
+  { value: 'personalizado', label: 'Rango personalizado' },
 ];
 
 const COLORES = [
@@ -19,7 +20,8 @@ const COLORES = [
   '#06b6d4', '#8b5cf6', '#10b981', '#f97316',
 ];
 
-const DEFAULT = { nombre: '', categoria: 'Alimentación', monto_limite: '', periodo: 'mensual', color: '#3a5849', rollover: false };
+const today = new Date().toISOString().split('T')[0];
+const DEFAULT = { nombre: '', categoria: 'Alimentación', monto_limite: '', periodo: 'mensual', color: '#3a5849', rollover: false, fecha_inicio: today, fecha_fin: today };
 
 function AddBudgetModal({ isOpen, onClose, currency, refreshData, editBudget }) {
   const [form, setForm] = useState(DEFAULT);
@@ -35,6 +37,8 @@ function AddBudgetModal({ isOpen, onClose, currency, refreshData, editBudget }) 
         periodo: editBudget.periodo,
         color: editBudget.color || '#3a5849',
         rollover: editBudget.rollover || false,
+        fecha_inicio: editBudget.fecha_inicio || today,
+        fecha_fin: editBudget.fecha_fin || today,
       });
     } else {
       setForm(DEFAULT);
@@ -49,6 +53,8 @@ function AddBudgetModal({ isOpen, onClose, currency, refreshData, editBudget }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.monto_limite || Number(form.monto_limite) <= 0) return alert('El monto límite debe ser mayor a 0');
+    if (form.periodo === 'personalizado' && (!form.fecha_inicio || !form.fecha_fin)) return alert('Selecciona las fechas de inicio y fin');
+    if (form.periodo === 'personalizado' && form.fecha_fin < form.fecha_inicio) return alert('La fecha fin debe ser igual o posterior a la fecha inicio');
     setLoading(true);
     try {
       let res;
@@ -112,6 +118,21 @@ function AddBudgetModal({ isOpen, onClose, currency, refreshData, editBudget }) 
               </div>
             </div>
 
+            {form.periodo === 'personalizado' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Fecha inicio</label>
+                  <input type="date" required value={form.fecha_inicio}
+                    onChange={e => setForm({ ...form, fecha_inicio: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label>Fecha fin</label>
+                  <input type="date" required value={form.fecha_fin} min={form.fecha_inicio}
+                    onChange={e => setForm({ ...form, fecha_fin: e.target.value })} />
+                </div>
+              </div>
+            )}
+
             <div className="form-group">
               <label>Límite de gasto</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -132,7 +153,7 @@ function AddBudgetModal({ isOpen, onClose, currency, refreshData, editBudget }) 
               </div>
             </div>
 
-            <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            {form.periodo !== 'personalizado' && <div className="form-group" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <label style={{ marginBottom: '2px' }}>Rollover de saldo</label>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
@@ -143,7 +164,7 @@ function AddBudgetModal({ isOpen, onClose, currency, refreshData, editBudget }) 
                 style={{ width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: form.rollover ? 'var(--primary)' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}>
                 <span style={{ position: 'absolute', top: '2px', left: form.rollover ? '22px' : '2px', width: '20px', height: '20px', borderRadius: '50%', background: 'white', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
               </button>
-            </div>
+            </div>}
 
             <button type="submit" className="submit-btn" disabled={loading}>
               {loading ? 'Guardando...' : isEdit ? 'Guardar Cambios' : 'Crear Presupuesto'}

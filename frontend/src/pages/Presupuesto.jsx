@@ -15,11 +15,18 @@ const CATEGORIA_ICONS = {
 };
 
 const PERIODO_LABELS = {
-  mensual:   'Este Mes',
-  semanal:   'Esta Semana',
-  quincenal: 'Esta Quincena',
-  anual:     'Este Año',
+  mensual:      'Este Mes',
+  semanal:      'Esta Semana',
+  quincenal:    'Esta Quincena',
+  anual:        'Este Año',
+  personalizado: 'Rango personalizado',
 };
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('es', { day: '2-digit', month: 'short' });
+}
 
 function getPeriodRange(periodo) {
   const now = new Date();
@@ -40,6 +47,16 @@ function getPeriodRange(periodo) {
     default:
       return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999) };
   }
+}
+
+function getPeriodRangeForBudget(budget) {
+  if (budget.periodo === 'personalizado') {
+    return {
+      start: new Date(budget.fecha_inicio + 'T00:00:00'),
+      end: new Date(budget.fecha_fin + 'T23:59:59.999'),
+    };
+  }
+  return getPeriodRange(budget.periodo);
 }
 
 function getPrevPeriodRange(periodo) {
@@ -70,7 +87,7 @@ function getPrevPeriodRange(periodo) {
 }
 
 function getGastado(budget, gastos, range) {
-  const { start, end } = range || getPeriodRange(budget.periodo);
+  const { start, end } = range || getPeriodRangeForBudget(budget);
   return gastos.filter(g => {
     const f = new Date(g.fecha);
     return g.categoria === budget.categoria && f >= start && f <= end;
@@ -78,15 +95,16 @@ function getGastado(budget, gastos, range) {
 }
 
 function getEfectiveLimite(budget, gastos) {
-  if (!budget.rollover) return budget.monto_limite;
+  if (!budget.rollover || budget.periodo === 'personalizado') return budget.monto_limite;
   const prevGastado = getGastado(budget, gastos, getPrevPeriodRange(budget.periodo));
   const prevUnused = Math.max(0, budget.monto_limite - prevGastado);
   return budget.monto_limite + prevUnused;
 }
 
 function getProyeccion(budget, gastos) {
+  if (budget.periodo === 'personalizado') return null;
   const now = new Date();
-  const { start, end } = getPeriodRange(budget.periodo);
+  const { start, end } = getPeriodRangeForBudget(budget);
   const totalDays = (end - start) / 86400000 + 1;
   const daysPassed = Math.max(1, (now - start) / 86400000);
   const gastado = getGastado(budget, gastos);
@@ -109,6 +127,10 @@ function BudgetCard({ budget, gastos, currency, onEdit, onDelete, deletingId }) 
   const status = getStatus(pct);
   const icon = CATEGORIA_ICONS[budget.categoria] || <Package size={16} />;
   const isDeleting = deletingId === budget._id;
+  const isPersonalizado = budget.periodo === 'personalizado';
+  const periodoLabel = isPersonalizado
+    ? `${fmtDate(budget.fecha_inicio)} – ${fmtDate(budget.fecha_fin)}`
+    : PERIODO_LABELS[budget.periodo];
 
   const barColor = pct >= 100 ? '#ef4444' : pct >= 90 ? '#f97316' : pct >= 70 ? '#f59e0b' : budget.color;
 
@@ -137,7 +159,7 @@ function BudgetCard({ budget, gastos, currency, onEdit, onDelete, deletingId }) 
       {/* Progress bar */}
       <div style={{ marginBottom: '12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '5px' }}>
-          <span>{PERIODO_LABELS[budget.periodo]}</span>
+          <span>{periodoLabel}</span>
           <span style={{ fontWeight: '700', color: barColor }}>{pct.toFixed(1)}%</span>
         </div>
         <div style={{ width: '100%', height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
@@ -163,13 +185,17 @@ function BudgetCard({ budget, gastos, currency, onEdit, onDelete, deletingId }) 
 
       {/* Footer: proyección + rollover */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f3f4f6', paddingTop: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>
-          {proyeccion > efectiveLimite
-            ? <TrendingUp size={12} color="#ef4444" />
-            : <TrendingDown size={12} color="#10b981" />}
-          <span>Proyección: <strong style={{ color: proyeccion > efectiveLimite ? '#ef4444' : '#10b981' }}>{currency}{proyeccion.toFixed(2)}</strong></span>
-        </div>
-        {budget.rollover && (
+        {proyeccion !== null ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--text-muted)' }}>
+            {proyeccion > efectiveLimite
+              ? <TrendingUp size={12} color="#ef4444" />
+              : <TrendingDown size={12} color="#10b981" />}
+            <span>Proyección: <strong style={{ color: proyeccion > efectiveLimite ? '#ef4444' : '#10b981' }}>{currency}{proyeccion.toFixed(2)}</strong></span>
+          </div>
+        ) : (
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Período único</div>
+        )}
+        {budget.rollover && !isPersonalizado && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '10px', color: 'var(--primary)', fontWeight: '600' }}>
             <RefreshCw size={10} /> Rollover
           </div>
